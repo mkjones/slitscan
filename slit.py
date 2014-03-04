@@ -2,9 +2,6 @@
 
 import subprocess as sp
 import numpy
-import pylab
-import time
-import sys
 import re
 import Image
 
