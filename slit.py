@@ -66,5 +66,5 @@ if __name__ == '__main__':
     final_image = get_final_array(FILE_NAME, NUM_ROWS, ROW_INDEX, num_frames, TOP_IS_LEFT)
     name = FILE_NAME.split('/')[-1]
     name = name.split('.')[0]
-    name = '/Users/mkjones/slitscan/%s-%d-%d.jpg' % (name, NUM_ROWS, ROW_INDEX)
+    name = '/Users/mkjones/slitscan/%s-%d-%d.png' % (name, NUM_ROWS, ROW_INDEX)
     Image.fromarray(final_image).save(name)
