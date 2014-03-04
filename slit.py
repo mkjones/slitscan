@@ -10,13 +10,17 @@ import Image
 
 # the file from which we read. Expected to be a video of
 # width 1280px x 720px.
-FILE_NAME = '/Users/mkjones/Movies/ride_to_work.mp4'
+FILE_NAME = '/Users/mkjones/Movies/outside_work_for_slit.MP4'
 
 # How many rows should we take from each frame?
 NUM_ROWS = 1
 
 # Where (of the 720 rows) should we start pulling rows from?
-ROW_INDEX = 700
+ROW_INDEX = 200
+
+# True if your video has the "top" to the left
+# False if it has the "top" to the right.
+LEFT_IS_TOP = True
 
 def get_num_frames(filename):
     info_args = ('ffmpeg', '-i', filename, '-vcodec', 'copy',
@@ -27,7 +31,7 @@ def get_num_frames(filename):
     matches = re.search('frame= *(\d+)', stderr)
     return int(matches.group(1))
 
-def get_final_array(filename, num_rows, row_index, num_frames):
+def get_final_array(filename, num_rows, row_index, num_frames, top_is_left):
 
     args = [
         'ffmpeg',
@@ -48,6 +52,9 @@ def get_final_array(filename, num_rows, row_index, num_frames):
     for i in xrange(num_frames):
         image_bytes = pipe.stdout.read(1280*720*3)
         image = numpy.fromstring(image_bytes, dtype='uint8').reshape((720, 1280, 3))
+        if top_is_left:
+            image = numpy.rot90(image)
+            image = numpy.rot90(image)
         x1 = row_index
         x2 = row_index + num_rows
 
@@ -59,7 +66,7 @@ def get_final_array(filename, num_rows, row_index, num_frames):
 
 if __name__ == '__main__':
     num_frames = get_num_frames(FILE_NAME)
-    final_image = get_final_array(FILE_NAME, NUM_ROWS, ROW_INDEX, num_frames)
+    final_image = get_final_array(FILE_NAME, NUM_ROWS, ROW_INDEX, num_frames, TOP_IS_LEFT)
     name = FILE_NAME.split('/')[-1]
     name = name.split('.')[0]
     name = '/Users/mkjones/slitscan/%s-%d-%d.jpg' % (name, NUM_ROWS, ROW_INDEX)
