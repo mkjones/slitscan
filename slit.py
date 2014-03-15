@@ -5,11 +5,7 @@ import numpy
 import re
 import Image
 from Video import Video
-
-# The video file from which we read.
-FILE_NAME = '/Users/mkjones/Movies/spinning_in_chair.mov'
-FILE_NAME = '/Users/mkjones/Movies/outside_work_for_slit.MP4'
-FILE_NAME = '/Users/mkjones/slitscan/shoreditch/0D9A3050.MOV'
+import argparse
 
 # How many consecutive rows should we take from each frame?
 # (Useful if a video does not have many frames and the output image
@@ -37,12 +33,17 @@ def get_final_array(frames, num_rows, row_index, num_frames):
     return final_image
 
 if __name__ == '__main__':
-    video = Video(FILE_NAME)
+    parser = argparse.ArgumentParser(description='Convert video to slitscan image.')
+    parser.add_argument('-f', help='The filename to the video', metavar='filename', required=True)
+    args = parser.parse_args()
+    filename = args.f
+
+    video = Video(filename)
     num_frames = video.getNumFrames()
     frames = video.yieldFrames()
     final_image = get_final_array(frames, NUM_ROWS, 400, num_frames)
 
-    filename_parts = FILE_NAME.split('/')
+    filename_parts = filename.split('/')
     name = filename_parts[-1]
     name = name.split('.')[0]
     image_path = '%s/%s.png' % ('/'.join(filename_parts[0:-1]), name)
@@ -59,7 +60,7 @@ if __name__ == '__main__':
     for row_index in xrange(720 - NUM_ROWS):
         print "processing row index %d" % row_index
         final_image = get_final_array(frames, NUM_ROWS, row_index, num_frames)
-        name = FILE_NAME.split('/')[-1]
+        name = filename.split('/')[-1]
         name = name.split('.')[0]
         name = '/Users/mkjones/slitscan/%s-%d-%03d.png' % (name, NUM_ROWS, row_index)
         Image.fromarray(final_image).save(name)
