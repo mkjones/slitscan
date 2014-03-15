@@ -4,6 +4,7 @@ import subprocess as sp
 import numpy
 import re
 import Image
+from Video import Video
 
 # the file from which we read. Expected to be a video of
 # size 1280px x 720px.
@@ -16,40 +17,6 @@ NUM_ROWS = 1
 # True if your video has the "top" to the left
 # False if it has the "top" to the right.
 TOP_IS_LEFT = True
-
-def get_num_frames(filename):
-    info_args = ('ffmpeg', '-i', filename, '-vcodec', 'copy',
-                 '-f', 'rawvideo', '-y', '/dev/null')
-    pipe = sp.Popen(info_args, stdin = sp.PIPE, stdout = sp.PIPE,
-                    stderr = sp.PIPE)
-    (stdout, stderr) = pipe.communicate()
-    matches = re.search('frame= *(\d+)', stderr)
-    return int(matches.group(1))
-
-def yield_frames(filename, num_frames, top_is_left):
-    args = [
-        'ffmpeg',
-        "-i",
-        filename,
-        "-f",
-        "image2pipe",
-        "-pix_fmt",
-        "rgb24",
-        "-vcodec",
-        "rawvideo",
-        "-"
-        ]
-
-    pipe = sp.Popen(args, stdin = sp.PIPE, stdout = sp.PIPE,
-                    stderr = sp.PIPE, bufsize=1280*720*3)
-
-    for i in xrange(num_frames):
-        image_bytes = pipe.stdout.read(1280*720*3)
-        image = numpy.fromstring(image_bytes, dtype='uint8').reshape((720, 1280, 3))
-        if top_is_left:
-            image = numpy.rot90(image)
-            image = numpy.rot90(image)
-        yield image
 
 def get_final_array(frames, num_rows, row_index, num_frames):
     i = 0
@@ -67,8 +34,12 @@ def get_final_array(frames, num_rows, row_index, num_frames):
     return numpy.rot90(final_image)
 
 if __name__ == '__main__':
-    num_frames = get_num_frames(FILE_NAME)
-    frames = yield_frames(FILE_NAME, num_frames, TOP_IS_LEFT)
+    video = Video(FILE_NAME)
+    num_frames = video.getNumFrames()
+    frames = video.yieldFrames()
+    final_image = get_final_array(frames, 1, 100, num_frames)
+    name = '/tmp/foo.png'
+    Image.fromarray(final_image).save(name)
 
     # only fetch the frames from ffmpeg once, and store them in memory
     frames = [x for x in frames]
