@@ -30,7 +30,6 @@ class Video:
     def _populateMetadata(self):
         info_args = ('ffmpeg', '-i', self.filename, '-vcodec', 'copy',
                      '-f', 'rawvideo', '-y', '/dev/null')
-        print ' '.join(info_args)
         pipe = subprocess.Popen(info_args,
                                 stdin = subprocess.PIPE,
                                 stdout = subprocess.PIPE,

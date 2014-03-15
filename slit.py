@@ -23,9 +23,13 @@ def get_final_array(frames, num_rows, row_index, num_frames):
         x1 = row_index
         x2 = row_index + num_rows
 
-        sub_image = image[row_index + num_rows, 0:1280, :]
-        frame_index = num_rows*i
-        final_image[frame_index:(frame_index+NUM_ROWS)] = sub_image
+        # the value of the slit from this frame
+        slit = image[x1:x2, 0:1280, :]
+
+        # where do we start
+        frame_index_start = num_rows*i
+        frame_index_end = frame_index_start + num_rows
+        final_image[frame_index_start:frame_index_end] = slit
         i += 1
 
     for i in xrange(3):
@@ -34,14 +38,20 @@ def get_final_array(frames, num_rows, row_index, num_frames):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Convert video to slitscan image.')
-    parser.add_argument('-f', help='The filename to the video', metavar='filename', required=True)
+    parser.add_argument('-f', metavar='filename', required=True,
+                        help='The filename to the video')
+    parser.add_argument('-r', metavar='num_pixel_rows_per_frame', type=int, default=1,
+                        help='How many consecutive rows of pixels should we take from '
+                        'each frame? Increase if your image is too narrow. Anything '
+                        'greater than 1 will make things look a bit jagged.')
     args = parser.parse_args()
     filename = args.f
+    num_rows = args.r
 
     video = Video(filename)
     num_frames = video.getNumFrames()
     frames = video.yieldFrames()
-    final_image = get_final_array(frames, NUM_ROWS, 400, num_frames)
+    final_image = get_final_array(frames, num_rows, 400, num_frames)
 
     filename_parts = filename.split('/')
     name = filename_parts[-1]
@@ -57,7 +67,7 @@ if __name__ == '__main__':
     frames = [x for x in frames]
 
     # for every slit in the original video, generate a slitscan image
-    for row_index in xrange(720 - NUM_ROWS):
+    for row_index in xrange(720 - num_rows):
         print "processing row index %d" % row_index
         final_image = get_final_array(frames, NUM_ROWS, row_index, num_frames)
         name = filename.split('/')[-1]
