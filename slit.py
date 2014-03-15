@@ -6,13 +6,15 @@ import re
 import Image
 from Video import Video
 
-# the file from which we read. Expected to be a video of
-# size 1280px x 720px.
+# The video file from which we read.
 FILE_NAME = '/Users/mkjones/Movies/spinning_in_chair.mov'
 FILE_NAME = '/Users/mkjones/Movies/outside_work_for_slit.MP4'
+FILE_NAME = '/Users/mkjones/slitscan/shoreditch/0D9A3050.MOV'
 
-# How many rows should we take from each frame?
-NUM_ROWS = 1
+# How many consecutive rows should we take from each frame?
+# (Useful if a video does not have many frames and the output image
+# ends up looking too horizontally squished)
+NUM_ROWS = 2
 
 # True if your video has the "top" to the left
 # False if it has the "top" to the right.
@@ -30,16 +32,25 @@ def get_final_array(frames, num_rows, row_index, num_frames):
         final_image[frame_index:(frame_index+NUM_ROWS)] = sub_image
         i += 1
 
+    for i in xrange(3):
+        final_image = numpy.rot90(final_image)
     return final_image
-    return numpy.rot90(final_image)
 
 if __name__ == '__main__':
     video = Video(FILE_NAME)
     num_frames = video.getNumFrames()
     frames = video.yieldFrames()
-    final_image = get_final_array(frames, 1, 100, num_frames)
-    name = '/tmp/foo.png'
-    Image.fromarray(final_image).save(name)
+    final_image = get_final_array(frames, NUM_ROWS, 400, num_frames)
+
+    filename_parts = FILE_NAME.split('/')
+    name = filename_parts[-1]
+    name = name.split('.')[0]
+    image_path = '%s/%s.png' % ('/'.join(filename_parts[0:-1]), name)
+
+    Image.fromarray(final_image).save(image_path)
+    print 'saved in %s' % image_path
+    import sys
+    sys.exit()
 
     # only fetch the frames from ffmpeg once, and store them in memory
     frames = [x for x in frames]
