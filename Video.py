@@ -102,7 +102,7 @@ class VideoWriter:
             "-f",
             "image2pipe",
             "-vcodec",
-            "png",
+            "bmp",
             "-r",
             "24",
             "-i",
@@ -119,10 +119,9 @@ class VideoWriter:
     def appendFrame(self, raw_frame):
         debug("making image")
         image = Image.fromarray(raw_frame)
-        debug("image format: %s" % image.format)
         debug("writing png to stream")
         try:
-            image.save(self.pipe.stdin, 'PNG')
+            image.save(self.pipe.stdin, 'BMP')
         except IOError as err:
             debug("error writing to video")
             debug(err)
