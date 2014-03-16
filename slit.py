@@ -33,15 +33,9 @@ if __name__ == '__main__':
         sys.exit(1)
 
     video = Video(filename)
-    processor = SlitProcessor(video)
-    final_image = processor.getSlitscan(slit_position, num_rows)
+    processor = SlitProcessor(video, slit_position, num_rows)
+    image_path = processor.getAndSaveSlitscan()
 
-    filename_parts = filename.split('/')
-    name = filename_parts[-1]
-    name = name.split('.')[0]
-    image_path = '%s/%s.png' % ('/'.join(filename_parts[0:-1]), name)
-
-    Image.fromarray(final_image).save(image_path)
     print image_path
     sys.exit()
 

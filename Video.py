@@ -11,6 +11,9 @@ class Video:
     def __init__(self, filename):
         self.filename = filename
 
+    def getFilename(self):
+        return self.filename
+
     def getNumFrames(self):
         if self.numFrames is None:
             self._populateMetadata()
