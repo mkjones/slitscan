@@ -20,6 +20,8 @@ if __name__ == '__main__':
     parser.add_argument('-p', metavar='slit_position', type=float, default=0.5,
                         help="Where in the frame is the slit?  Should be a decimal from "
                         "[0, 1] representing the percent offset from the left of the frame.")
+    parser.add_argument('-v', action="store_true",
+                        help="Make a video, instead of just a single frame.")
 
     args = parser.parse_args()
     file = args.f
@@ -27,26 +29,26 @@ if __name__ == '__main__':
     num_rows = args.r
     slit_position = args.p
 
+    if num_rows < 0:
+        print >>sys.stderr, "Must use at least one row (got %d)" % num_rows
+        parser.print_usage(sys.stderr)
+        sys.exit(1)
+
     if (slit_position < 0 or slit_position > 1):
         print >>sys.stderr, "Invalid slit position %0.2f.  Must be on [0, 1]." % slit_position
         parser.print_usage(sys.stderr)
         sys.exit(1)
 
-    video = MemoizedVideo(filename)
-    processor = SlitProcessor(video, slit_position, num_rows)
-    image_path = processor.getAndSaveSlitscan()
+    make_video = args.v
+    if make_video:
+        video = MemoizedVideo(filename)
+        for slit_position in xrange(0, 720 - num_rows, 4):
+            print "processing slit position %d" % slit_position
+            processor = SlitProcessor(video, slit_position, num_rows)
+            processor.getAndSaveSlitscan()
+    else:
+        video = Video(filename)
+        processor = SlitProcessor(video, int(slit_position * video.getHeight()), num_rows)
+        image_path = processor.getAndSaveSlitscan()
 
-    print image_path
-    sys.exit()
-
-    # only fetch the frames from ffmpeg once, and store them in memory
-    frames = [x for x in frames]
-
-    # for every slit in the original video, generate a slitscan image
-    for row_index in xrange(0, 720 - num_rows, 4):
-        print "processing row index %d" % row_index
-        final_image = get_final_array(frames, num_rows, row_index, num_frames)
-        name = filename.split('/')[-1]
-        name = name.split('.')[0]
-        name = '/Users/mkjones/slitscan/%s-%d-%03d.png' % (name, num_rows, row_index)
-        Image.fromarray(final_image).save(name)
+        print image_path

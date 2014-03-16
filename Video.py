@@ -77,8 +77,12 @@ class Video:
 # Same as Video, except the video frames are memoized so you only need to parse
 # the video file once.  Trades off faster speed for more (O(n)) memory usage.
 class MemoizedVideo(Video):
+    memoizedFrames = None
+
     def getFrames(self):
-        return [x for x in Video.getFrames(self)]
+        if self.memoizedFrames is None:
+            self.memoizedFrames = [x for x in Video.getFrames(self)]
+        return self.memoizedFrames
 
 if __name__ == '__main__':
     v = Video('/Users/mkjones/Pictures/sunset_timelapse/large.avi')
