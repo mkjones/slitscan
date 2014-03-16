@@ -7,17 +7,20 @@ class SlitProcessor:
     video = None
     slitPosition = None
     numRows = None
+    _lastTime = None
 
     def __init__(self, video, slit_position, num_rows):
         self.video = video
         self.slitPosition = slit_position
         self.numRows = num_rows
-        self._lastTime = time.time()
+        if SlitProcessor._lastTime is None:
+            SlitProcessor._lastTime = time.time()
+        self._debug("Constructed processor for %d" % slit_position)
 
     def _debug(self, event):
         now = time.time()
         diff = now - self._lastTime
-        self._lastTime = now
+        SlitProcessor._lastTime = now
         print "[%0.3f] %s" % (diff, event)
 
     def getAndSaveSlitscan(self):

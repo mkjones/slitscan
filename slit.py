@@ -4,7 +4,7 @@ import subprocess as sp
 import numpy
 import re
 import Image
-from Video import Video, MemoizedVideo
+from Video import VideoReader, MemoizedVideoReader, VideoWriter
 from SlitProcessor import SlitProcessor
 import argparse
 import sys
@@ -41,13 +41,17 @@ if __name__ == '__main__':
 
     make_video = args.v
     if make_video:
-        video = MemoizedVideo(filename)
-        for slit_position in xrange(0, 720 - num_rows, 4):
+        video = MemoizedVideoReader(filename)
+        writer = VideoWriter("/tmp/out.avi")
+        for slit_position in xrange(0, 720 - num_rows, 16):
             print "processing slit position %d" % slit_position
             processor = SlitProcessor(video, slit_position, num_rows)
-            processor.getAndSaveSlitscan()
+            image = processor.getSlitscan()
+            writer.appendFrame(image)
+        writer.done()
+
     else:
-        video = Video(filename)
+        video = VideoReader(filename)
         processor = SlitProcessor(video, int(slit_position * video.getHeight()), num_rows)
         image_path = processor.getAndSaveSlitscan()
 
