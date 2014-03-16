@@ -26,7 +26,7 @@ class SlitProcessor:
         x1 = slit_position
         x2 = slit_position + self.numRows
         final_image = numpy.zeros((num_frames*self.numRows, self.video.getWidth(), 3), 'uint8')
-        for image in self.video.yieldFrames():
+        for image in self.video.getFrames():
             # the value of the slit from this frame
             slit = image[x1:x2, 0:1280, :]
 

@@ -4,7 +4,7 @@ import subprocess as sp
 import numpy
 import re
 import Image
-from Video import Video
+from Video import Video, MemoizedVideo
 from SlitProcessor import SlitProcessor
 import argparse
 import sys
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         parser.print_usage(sys.stderr)
         sys.exit(1)
 
-    video = Video(filename)
+    video = MemoizedVideo(filename)
     processor = SlitProcessor(video, slit_position, num_rows)
     image_path = processor.getAndSaveSlitscan()
 

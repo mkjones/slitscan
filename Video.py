@@ -45,7 +45,7 @@ class Video:
         self.width = int(matches.group(1))
         self.height = int(matches.group(2))
 
-    def yieldFrames(self):
+    def getFrames(self):
         args = [
             "ffmpeg",
             "-i",
@@ -73,6 +73,12 @@ class Video:
 
     def _rotateSourceImageForOutput(self, image):
         return image
+
+# Same as Video, except the video frames are memoized so you only need to parse
+# the video file once.  Trades off faster speed for more (O(n)) memory usage.
+class MemoizedVideo(Video):
+    def getFrames(self):
+        return [x for x in Video.getFrames(self)]
 
 if __name__ == '__main__':
     v = Video('/Users/mkjones/Pictures/sunset_timelapse/large.avi')
