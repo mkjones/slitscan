@@ -17,6 +17,7 @@ class SlitProcessor:
     def _debug(self, event):
         now = time.time()
         diff = now - self._lastTime
+        self._lastTime = now
         print "[%0.3f] %s" % (diff, event)
 
     def getAndSaveSlitscan(self):
