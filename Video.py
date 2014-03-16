@@ -119,8 +119,15 @@ class VideoWriter:
     def appendFrame(self, raw_frame):
         debug("making image")
         image = Image.fromarray(raw_frame)
+        debug("image format: %s" % image.format)
         debug("writing png to stream")
-        image.save(self.pipe.stdin, 'PNG')
+        try:
+            image.save(self.pipe.stdin, 'PNG')
+        except IOError as err:
+            debug("error writing to video")
+            debug(err)
+            (stdout, stderr) = self.pipe.communicate()
+            debug(stderr)
         debug("done appending frame")
 
     def done(self):

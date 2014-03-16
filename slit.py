@@ -42,7 +42,8 @@ if __name__ == '__main__':
     make_video = args.v
     if make_video:
         video = MemoizedVideoReader(filename)
-        writer = VideoWriter("/tmp/out.avi")
+        out_filename = '%s.avi' % '.'.join(filename.split('.')[0:-1])
+        writer = VideoWriter(out_filename)
         for slit_position in xrange(0, 720 - num_rows, 1):
             print "processing slit position %d" % slit_position
             processor = SlitProcessor(video, slit_position, num_rows)
