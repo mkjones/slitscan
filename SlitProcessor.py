@@ -58,5 +58,5 @@ class SlitProcessor:
         filename_parts = filename.split('/')
         name = filename_parts[-1]
         name = name.split('.')[0]
-        return '%s/%s-%d-%03d.png' % ('/'.join(filename_parts[0:-1]), name,
+        return '%s/%s-%d-%03d.bmp' % ('/'.join(filename_parts[0:-1]), name,
                                       self.numRows, self.slitPosition)

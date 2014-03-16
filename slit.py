@@ -52,8 +52,9 @@ if __name__ == '__main__':
         writer.done()
 
     else:
-        video = VideoReader(filename)
-        processor = SlitProcessor(video, int(slit_position * video.getHeight()), num_rows)
-        image_path = processor.getAndSaveSlitscan()
-
-        print image_path
+        video = MemoizedVideoReader(filename)
+        # slit_position = int(slit_position * video.getHeight())
+        for slit_position in xrange(0, video.getHeight(), 90):
+            processor = SlitProcessor(video, slit_position, num_rows)
+            image_path = processor.getAndSaveSlitscan()
+            print image_path
