@@ -2,6 +2,7 @@ import re
 import subprocess
 import numpy
 import Image
+from timedebug import debug
 
 class VideoReader:
     filename = ''
@@ -116,7 +117,11 @@ class VideoWriter:
                                 stderr = subprocess.PIPE)
 
     def appendFrame(self, raw_frame):
-        Image.fromarray(raw_frame).save(self.pipe.stdin, 'PNG')
+        debug("making image")
+        image = Image.fromarray(raw_frame)
+        debug("writing png to stream")
+        image.save(self.pipe.stdin, 'PNG')
+        debug("done appending frame")
 
     def done(self):
         self.pipe.stdin.close()

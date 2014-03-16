@@ -1,6 +1,7 @@
 import numpy
 import Image
 import time
+from timedebug import debug
 
 class SlitProcessor:
 
@@ -13,9 +14,7 @@ class SlitProcessor:
         self.video = video
         self.slitPosition = slit_position
         self.numRows = num_rows
-        if SlitProcessor._lastTime is None:
-            SlitProcessor._lastTime = time.time()
-        self._debug("Constructed processor for %d" % slit_position)
+        debug("Constructed processor for %d" % slit_position)
 
     def _debug(self, event):
         now = time.time()
@@ -24,12 +23,12 @@ class SlitProcessor:
         print "[%0.3f] %s" % (diff, event)
 
     def getAndSaveSlitscan(self):
-        self._debug("getting image")
+        debug("getting image")
         image = self.getSlitscan()
         filename = self.getImageFilename()
-        self._debug("writing to disk")
+        debug("writing to disk")
         Image.fromarray(image).save(filename)
-        self._debug("done with slit_position %d" % self.slitPosition)
+        debug("done with slit_position %d" % self.slitPosition)
         return filename
 
     def getSlitscan(self):

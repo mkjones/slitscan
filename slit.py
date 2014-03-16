@@ -43,7 +43,7 @@ if __name__ == '__main__':
     if make_video:
         video = MemoizedVideoReader(filename)
         writer = VideoWriter("/tmp/out.avi")
-        for slit_position in xrange(0, 720 - num_rows, 16):
+        for slit_position in xrange(0, 720 - num_rows, 1):
             print "processing slit position %d" % slit_position
             processor = SlitProcessor(video, slit_position, num_rows)
             image = processor.getSlitscan()
