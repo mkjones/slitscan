@@ -1,8 +1,46 @@
 import re
 import subprocess
 import numpy
-import Image
+from PIL import Image
 from timedebug import debug
+import glob
+
+class ImageListVideoReader:
+
+    def __init__(self, glob):
+        self.glob = glob
+
+    def getFilename(self):
+        return  '/tmp/foo.jpg'
+
+    def getNumFrames(self):
+        return len(self._getFilenames())
+
+    def _getFilenames(self):
+        return glob.glob(self.glob)
+
+    def getWidth(self):
+        return self._getDims()[0]
+
+    def getHeight(self):
+        return self._getDims()[1]
+
+    def _getDims(self):
+        filename = self._getFilenames()[0]
+        image = Image.open(filename)
+        return image.size
+
+    def getFrames(self):
+        for filename in self._getFilenames():
+            im = Image.open(filename)
+            debug("getting data")
+            data = im.getdata()
+            debug("creating array")
+            raw_arr = numpy.array(data, 'uint8')
+            debug("reshaping array")
+            raw_arr = raw_arr.reshape((self.getHeight(), self.getWidth(), 3))
+            debug("yielding array")
+            yield raw_arr
 
 class VideoReader:
     filename = ''

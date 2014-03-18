@@ -3,8 +3,8 @@
 import subprocess as sp
 import numpy
 import re
-import Image
-from Video import VideoReader, MemoizedVideoReader, VideoWriter
+from PIL import Image
+from Video import VideoReader, MemoizedVideoReader, VideoWriter, ImageListVideoReader
 from SlitProcessor import SlitProcessor
 import argparse
 import sys
@@ -22,6 +22,7 @@ if __name__ == '__main__':
                         "[0, 1] representing the percent offset from the left of the frame.")
     parser.add_argument('-v', action="store_true",
                         help="Make a video, instead of just a single frame.")
+
 
     args = parser.parse_args()
     file = args.f
@@ -44,7 +45,7 @@ if __name__ == '__main__':
         video = MemoizedVideoReader(filename)
         out_filename = '%s.avi' % '.'.join(filename.split('.')[0:-1])
         writer = VideoWriter(out_filename)
-        for slit_position in xrange(0, 720 - num_rows, 1):
+        for slit_position in xrange(0, video.getHeight() - num_rows, 1):
             print "processing slit position %d" % slit_position
             processor = SlitProcessor(video, slit_position, num_rows)
             image = processor.getSlitscan()
@@ -52,9 +53,14 @@ if __name__ == '__main__':
         writer.done()
 
     else:
-        video = MemoizedVideoReader(filename)
-        # slit_position = int(slit_position * video.getHeight())
-        for slit_position in xrange(0, video.getHeight(), 90):
+        #video = VideoReader(filename)
+        video = ImageListVideoReader('/Users/mkjones/Pictures/sunset_timelapse/*.JPG')
+        slit_position = int(slit_position * video.getHeight())
+        processor = SlitProcessor(video, slit_position, num_rows)
+        image_path = processor.getAndSaveSlitscan()
+        print image_path
+        sys.exit()
+        for slit_position in xrange(0, video.getHeight(), 600):
             processor = SlitProcessor(video, slit_position, num_rows)
             image_path = processor.getAndSaveSlitscan()
             print image_path

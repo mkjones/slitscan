@@ -1,5 +1,5 @@
 import numpy
-import Image
+from PIL import Image
 import time
 from timedebug import debug
 
@@ -8,22 +8,13 @@ class SlitProcessor:
     video = None
     slitPosition = None
     numRows = None
-    _lastTime = None
 
     def __init__(self, video, slit_position, num_rows):
         self.video = video
         self.slitPosition = slit_position
         self.numRows = num_rows
-        debug("Constructed processor for %d" % slit_position)
-
-    def _debug(self, event):
-        now = time.time()
-        diff = now - self._lastTime
-        SlitProcessor._lastTime = now
-        print "[%0.3f] %s" % (diff, event)
 
     def getAndSaveSlitscan(self):
-        debug("getting image")
         image = self.getSlitscan()
         filename = self.getImageFilename()
         debug("writing to disk")
@@ -33,14 +24,16 @@ class SlitProcessor:
 
     def getSlitscan(self):
         num_frames = self.video.getNumFrames()
-
+        debug("generating slitscan for %d frames" % num_frames)
         i = 0
         x1 = self.slitPosition
         x2 = self.slitPosition + self.numRows
         final_image = numpy.zeros((num_frames*self.numRows, self.video.getWidth(), 3), 'uint8')
-        for image in self.video.getFrames():
+
+        for im in self.video.getFrames():
             # the value of the slit from this frame
-            slit = image[x1:x2, 0:1280, :]
+            slit = im[x1:x2, :, :]
+
             # where does the slit start in the output image?
             frame_index_start = self.numRows*i
             # where does this slit end in the output image?
@@ -58,5 +51,5 @@ class SlitProcessor:
         filename_parts = filename.split('/')
         name = filename_parts[-1]
         name = name.split('.')[0]
-        return '%s/%s-%d-%03d.bmp' % ('/'.join(filename_parts[0:-1]), name,
+        return '%s/%s-%d-%03d.png' % ('/'.join(filename_parts[0:-1]), name,
                                       self.numRows, self.slitPosition)
