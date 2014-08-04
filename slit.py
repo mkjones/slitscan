@@ -53,14 +53,9 @@ if __name__ == '__main__':
         writer.done()
 
     else:
-        #video = VideoReader(filename)
-        video = ImageListVideoReader('/Users/mkjones/Pictures/sunset_timelapse/*.JPG')
+        video = VideoReader(filename)
         slit_position = int(slit_position * video.getHeight())
-        processor = SlitProcessor(video, slit_position, num_rows)
-        image_path = processor.getAndSaveSlitscan()
-        print image_path
-        sys.exit()
-        for slit_position in xrange(0, video.getHeight(), 600):
+        for slit_position in xrange(0, video.getHeight(), video.getHeight() / 6):
             processor = SlitProcessor(video, slit_position, num_rows)
             image_path = processor.getAndSaveSlitscan()
             print image_path
