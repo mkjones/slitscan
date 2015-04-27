@@ -42,7 +42,7 @@ class SlitProcessor:
             final_image[frame_index_start:frame_index_end] = slit
             i += 1
 
-        for i in xrange(3):
+        for i in xrange(1):
             final_image = numpy.rot90(final_image)
         return final_image
 

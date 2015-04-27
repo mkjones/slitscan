@@ -21,6 +21,11 @@ if __name__ == '__main__':
                         help="Where in the frame is the slit?  Should be a decimal from "
                         "[0, 1] representing the percent offset from the left of the frame.")
     parser.add_argument('-m', metavar='mode', choices=('normal', 'video', 'average'), default='normal')
+    parser.add_argument('-e', metavar='video_row_every', type=int, default=1,
+                        help='Applicable only if we\'re in video mode.  We will generate a frame '
+                        'every N rows.  If you have a large input video and want a small output '
+                        'video, increase this from the default of 1.  For example, 10 will make a '
+                        'frame from every 10th row of pixels.  1 will create every possible frame.')
 
 
     args = parser.parse_args()
@@ -44,7 +49,7 @@ if __name__ == '__main__':
         video = MemoizedVideoReader(filename)
         out_filename = '%s.avi' % '.'.join(filename.split('.')[0:-1])
         writer = VideoWriter(out_filename)
-        for slit_position in xrange(0, video.getHeight() - num_rows, 1):
+        for slit_position in xrange(0, video.getHeight() - num_rows, args.e):
             print "processing slit position %d" % slit_position
             processor = SlitProcessor(video, slit_position, num_rows)
             image = processor.getSlitscan()
