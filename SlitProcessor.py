@@ -51,5 +51,12 @@ class SlitProcessor:
         filename_parts = filename.split('/')
         name = filename_parts[-1]
         name = name.split('.')[0]
-        return '%s/%s-%d-%03d.png' % ('/'.join(filename_parts[0:-1]), name,
-                                      self.numRows, self.slitPosition)
+
+
+        return '%s/%s-%dfps-%d-%03d.png' % (
+            '/'.join(filename_parts[0:-1]),
+            name,
+            self.video.getFramerate(),
+            self.numRows,
+            self.slitPosition
+        )

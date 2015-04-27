@@ -47,6 +47,7 @@ class VideoReader:
     numFrames = None
     width = None
     height = None
+    framerate = None
 
     def __init__(self, filename):
         self.filename = filename
@@ -70,6 +71,11 @@ class VideoReader:
             self._populateMetadata()
         return self.height
 
+    def getFramerate(self):
+        if self.framerate is None:
+            self._populateMetadata()
+        return self.framerate
+
     def _populateMetadata(self):
         info_args = ('ffmpeg', '-i', self.filename, '-vcodec', 'copy',
                      '-f', 'rawvideo', '-y', '/dev/null')
@@ -84,6 +90,9 @@ class VideoReader:
         matches = re.search(' (\d+)x(\d+),? ', stderr)
         self.width = int(matches.group(1))
         self.height = int(matches.group(2))
+
+        matches = re.search(' ([\d\.]+) fps[,$]', stderr)
+        self.framerate = int(round(float(matches.group(1))))
 
     def getFrames(self):
         args = [
