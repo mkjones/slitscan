@@ -20,8 +20,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', metavar='slit_position', type=float, default=0.5,
                         help="Where in the frame is the slit?  Should be a decimal from "
                         "[0, 1] representing the percent offset from the left of the frame.")
-    parser.add_argument('-v', action="store_true",
-                        help="Make a video, instead of just a single frame.")
+    parser.add_argument('-m', metavar='mode', choices=('normal', 'video', 'average'), default='normal')
 
 
     args = parser.parse_args()
@@ -40,8 +39,8 @@ if __name__ == '__main__':
         parser.print_usage(sys.stderr)
         sys.exit(1)
 
-    make_video = args.v
-    if make_video:
+
+    if args.m == 'video':
         video = MemoizedVideoReader(filename)
         out_filename = '%s.avi' % '.'.join(filename.split('.')[0:-1])
         writer = VideoWriter(out_filename)
@@ -52,10 +51,23 @@ if __name__ == '__main__':
             writer.appendFrame(image)
         writer.done()
 
-    else:
+    elif args.m == 'normal':
         video = VideoReader(filename)
         slit_position = int(slit_position * video.getHeight())
         for slit_position in xrange(0, video.getHeight(), video.getHeight() / 6):
             processor = SlitProcessor(video, slit_position, num_rows)
             image_path = processor.getAndSaveSlitscan()
             print image_path
+
+    elif args.m == 'average':
+        video = VideoReader(filename)
+        num_frames = video.getNumFrames()
+        final_image = numpy.zeros((video.getHeight(), video.getWidth(), 3))
+        num_frames = 0
+        for im in video.getFrames():
+            final_image += im
+            num_frames += 1
+        final_image = final_image / num_frames
+        filename = '%s-avg.png' % (video.getBaseOutputName())
+        Image.fromarray(final_image.astype('uint8')).save(filename)
+

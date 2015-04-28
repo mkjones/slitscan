@@ -120,6 +120,20 @@ class VideoReader:
 
             yield self._rotateSourceImageForOutput(image)
 
+    def getBaseOutputName(self):
+        filename = self.getFilename()
+        filename_parts = filename.split('/')
+        name = filename_parts[-1]
+        name = name.split('.')[0]
+
+
+        return '%s/%s-%dfps' % (
+            '/'.join(filename_parts[0:-1]),
+            name,
+            self.getFramerate(),
+        )
+
+
     def _rotateSourceImageForOutput(self, image):
         return image
 

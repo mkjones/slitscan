@@ -47,16 +47,6 @@ class SlitProcessor:
         return final_image
 
     def getImageFilename(self):
-        filename = self.video.getFilename()
-        filename_parts = filename.split('/')
-        name = filename_parts[-1]
-        name = name.split('.')[0]
+        base = self.video.getBaseOutputName()
+        return '%s-%d-%d.png' % (base, self.numRows, self.slitPosition)
 
-
-        return '%s/%s-%dfps-%d-%03d.png' % (
-            '/'.join(filename_parts[0:-1]),
-            name,
-            self.video.getFramerate(),
-            self.numRows,
-            self.slitPosition
-        )
