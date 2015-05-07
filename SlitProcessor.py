@@ -24,6 +24,8 @@ class SlitProcessor:
 
     def getSlitscan(self):
         num_frames = self.video.getNumFrames()
+        if num_frames > 10000:
+            num_frames = 10000
         debug("generating slitscan for %d frames" % num_frames)
         i = 0
         x1 = self.slitPosition
@@ -31,6 +33,10 @@ class SlitProcessor:
         final_image = numpy.zeros((num_frames*self.numRows, self.video.getWidth(), 3), 'uint8')
 
         for im in self.video.getFrames():
+            if i % 1000 == 0:
+                debug("starting frame %d" % i)
+            if i > num_frames:
+                break
             # the value of the slit from this frame
             slit = im[x1:x2, :, :]
 

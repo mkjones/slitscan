@@ -82,10 +82,10 @@ class VideoReader:
         pipe = subprocess.Popen(info_args,
                                 stdin = subprocess.PIPE,
                                 stdout = subprocess.PIPE,
-                            stderr = subprocess.PIPE)
+                                stderr = subprocess.PIPE)
         (stdout, stderr) = pipe.communicate()
-        matches = re.search('frame= *(\d+)', stderr)
-        self.numFrames = int(matches.group(1))
+        matches = re.findall('frame= *(\d+)', stderr, re.MULTILINE | re.UNICODE)
+        self.numFrames = int(matches[-1])
 
         matches = re.search(' (\d+)x(\d+),? ', stderr)
         self.width = int(matches.group(1))

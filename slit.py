@@ -9,6 +9,18 @@ from SlitProcessor import SlitProcessor
 import argparse
 import sys
 
+def find_average(video):
+    num_frames = video.getNumFrames()
+    final_image = numpy.zeros((video.getHeight(), video.getWidth(), 3))
+    num_frames = 0
+    for im in video.getFrames():
+        final_image += im
+        num_frames += 1
+    final_image = final_image / num_frames
+    filename = '%s-avg.png' % (video.getBaseOutputName())
+    Image.fromarray(final_image.astype('uint8')).save(filename)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Convert video to slitscan image.')
     parser.add_argument('-f', metavar='filename', required=True, type=argparse.FileType(),
@@ -63,16 +75,9 @@ if __name__ == '__main__':
             processor = SlitProcessor(video, slit_position, num_rows)
             image_path = processor.getAndSaveSlitscan()
             print image_path
+        find_average(video)
 
     elif args.m == 'average':
         video = VideoReader(filename)
-        num_frames = video.getNumFrames()
-        final_image = numpy.zeros((video.getHeight(), video.getWidth(), 3))
-        num_frames = 0
-        for im in video.getFrames():
-            final_image += im
-            num_frames += 1
-        final_image = final_image / num_frames
-        filename = '%s-avg.png' % (video.getBaseOutputName())
-        Image.fromarray(final_image.astype('uint8')).save(filename)
+        find_average(video)
 
