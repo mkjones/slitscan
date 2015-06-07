@@ -4,6 +4,7 @@ import numpy
 from PIL import Image
 from timedebug import debug
 import glob
+import json
 
 class ImageListVideoReader:
 
@@ -77,22 +78,35 @@ class VideoReader:
         return self.framerate
 
     def _populateMetadata(self):
-        info_args = ('ffmpeg', '-i', self.filename, '-vcodec', 'copy',
-                     '-f', 'rawvideo', '-y', '/dev/null')
-        pipe = subprocess.Popen(info_args,
+        probe_args = ('ffprobe', '-of', 'json', '-show_streams',
+                      '-select_streams', 'v', self.filename)
+        pipe = subprocess.Popen(probe_args,
                                 stdin = subprocess.PIPE,
                                 stdout = subprocess.PIPE,
                                 stderr = subprocess.PIPE)
         (stdout, stderr) = pipe.communicate()
-        matches = re.findall('frame= *(\d+)', stderr, re.MULTILINE | re.UNICODE)
-        self.numFrames = int(matches[-1])
+        print probe_args
+        data = json.loads(stdout)
+        if len(data) != 1:
+            raise Exception('No stream data? %s' % stdout)
+        streams = data['streams']
+        if len(streams) == 0:
+            raise Exception('No streams.')
+        if len(streams) > 1:
+            raise Exception('Too many video streams (%d).' % len(streams))
+        stream_data = streams[0]
 
-        matches = re.search(' (\d+)x(\d+),? ', stderr)
-        self.width = int(matches.group(1))
-        self.height = int(matches.group(2))
+        framerate_list = stream_data['r_frame_rate'].split('/')
+        framerate = float(framerate_list[0]) / float(framerate_list[1])
+        self.framerate = int(round(framerate))
 
-        matches = re.search(' ([\d\.]+) fps[,$]', stderr)
-        self.framerate = int(round(float(matches.group(1))))
+        self.width = int(stream_data['width'])
+        self.height = int(stream_data['height'])
+
+        num_frames =  int(stream_data['nb_frames'])
+        if num_frames <= 0:
+            raise Exception('No frame count data.')
+        self.numFrames = num_frames
 
     def getFrames(self):
         args = [
