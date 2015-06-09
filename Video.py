@@ -125,7 +125,8 @@ class VideoReader:
         buffer_size = self.getWidth() * self.getHeight() * 3
         pipe = subprocess.Popen(args, stdin = subprocess.PIPE,
                                 stdout = subprocess.PIPE,
-                                stderr = subprocess.PIPE, bufsize=buffer_size)
+                                stderr = subprocess.PIPE,
+                                bufsize=buffer_size)
 
         for i in xrange(self.getNumFrames()):
             image_bytes = pipe.stdout.read(buffer_size)
@@ -150,6 +151,15 @@ class VideoReader:
 
     def _rotateSourceImageForOutput(self, image):
         return image
+
+    def __str__(self):
+        return ('path: %s, width: %d, height: %d, '
+                'frame_rate: %d, frame_count: %d' % (
+                    self.getFilename(),
+                    self.getWidth(),
+                    self.getHeight(),
+                    self.getFramerate(),
+                    self.getNumFrames()))
 
 # Same as Video, except the video frames are memoized so you only need to parse
 # the video file once.  Trades off faster speed for more (O(n)) memory usage.
