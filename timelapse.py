@@ -25,23 +25,30 @@ def gauss(frame):
     frame = ndimage.filters.gaussian_filter(frame, 3)
     return frame
 
-def find_most_similar(target, buf, iter):
+def find_most_similar(target, buf, iter, last_frame_idx, speedup):
     debug('finding most similar')
     target_int = gauss(target).astype(int)
-    buf_gaus = [gauss(x) for x in buf]
-    diffs = [get_diff(target_int, x.astype(int)) for x in buf_gaus]
-    max_diff = float(max(diffs))
-    diffs = [x / max_diff for x in diffs]
+    buf_gaus = [(x[0], gauss(x[1])) for x in buf]
+    diffs = [(x[0], get_diff(target_int, x[1].astype(int))) for x in buf_gaus]
+    adjusted_diffs = []
+    for i in range(len(diffs)):
+        (frame_idx, raw_diff) = diffs[i]
+        distance = abs(frame_idx - last_frame_idx - speedup)
+        distance_cost = (distance * distance) + 1
+        adjusted_diffs.append((frame_idx, distance_cost * raw_diff))
+
+    max_diff = float(max([x[1] for x in adjusted_diffs]))
+    normalized_adjusted_diffs = [(x[0], x[1] / max_diff) for x in adjusted_diffs]
     debug('got diffs')
 
-    argmin = numpy.argmin(diffs)
+    argmin = numpy.argmin([x[1] for x in adjusted_diffs])
     debug('Picked frame %d of %d (distances from prev chosen frame: [%s]' %
-          (argmin, len(buf), ', '.join([str(x) for x in diffs])))
+          (argmin, len(buf), ', '.join([str(x) for x in normalized_adjusted_diffs])))
 
     misc.imsave('/tmp/img-%d.jpg' % iter, target)
     for i in range(len(diffs)):
-        misc.imsave('/tmp/img-%d-%d-%d-%0.2f.jpg' % (RESIZE_SIZE, iter, i, diffs[i]),
-                    buf_gaus[i])
+        misc.imsave('/tmp/img-%d-%d-%d-%0.2f.jpg' % (RESIZE_SIZE, iter, i, normalized_adjusted_diffs[i][1]),
+                    buf_gaus[i][1])
         i += 1
     return argmin
 
@@ -60,10 +67,11 @@ if __name__ == '__main__':
 
     reader = VideoReader(input_filename)
     debug('reader: %s' % reader)
-    writer = VideoWriter('%s-%dx-%d.avi' % (reader.getBaseOutputName(), speedup, RESIZE_SIZE))
+    writer = VideoWriter('%s-t2-%dx-%d.avi' % (reader.getBaseOutputName(), speedup, RESIZE_SIZE))
 
     buf = []
     last_frame = None
+    last_frame_idx = None
 
     i = -1
     for frame in reader.getFrames():
@@ -71,20 +79,23 @@ if __name__ == '__main__':
         # initialize the "last_frame" with the first frame of the video
         if last_frame == None:
             last_frame = frame
+            last_frame_idx = 0
             continue
 
-        # if we have a not-full buffer, just add this frame to it
+        buf.append((i, frame))
+
+        # if we have a not-full buffer, we're done
         if len(buf) != speedup:
-            buf.append(frame)
             continue
 
         # we have a full buffer!  pick the "best" frame from it and use that one
-        debug('picking best frame from %d preceding frame %d' % (speedup, i))
+        debug('picking best frame from %d preceding frame %d' % (len(buf), i))
 
-        new_frame_idx = find_most_similar(last_frame, buf, i)
-        new_frame = buf[new_frame_idx]
+        new_frame_idx = find_most_similar(last_frame, buf, i, last_frame_idx, speedup)
+        new_frame = buf[new_frame_idx][1]
         writer.appendFrame(new_frame)
         last_frame = new_frame
-        buf = []
+        last_frame_idx = buf[new_frame_idx][0]
+        buf = buf[new_frame_idx:]
 
     writer.done()
